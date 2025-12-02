@@ -1,0 +1,7 @@
+{
+  "name": "nix-dockyard",
+  "image": "nixos/nix:latest",
+  "runArgs": [
+    "--privileged"
+  ]
+}
