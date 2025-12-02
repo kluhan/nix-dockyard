@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  nix-validation:
+    name: Validate NixOS configuration
+    runs-on: ubuntu-latest
+    container:
+      image: nixos/nix:latest
+    env:
+      NIX_CONFIG: "experimental-features = nix-command flakes"
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Show Nix version
+        run: nix --version
+
+      - name: Run flake checks
+        run: nix flake check --show-trace
+
+      - name: Build polaris system
+        run: nix build .#nixosConfigurations.myserver.config.system.build.toplevel --show-trace

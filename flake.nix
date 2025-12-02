@@ -13,7 +13,7 @@
           system = "x86_64-linux";
 
           modules = [
-            ./hosts/myserver/configuration.nix
+            ./hosts/polaris/configuration.nix
             ./modules/base.nix
             ./modules/security.nix
             ./modules/docker.nix
