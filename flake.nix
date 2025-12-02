@@ -9,7 +9,7 @@
   outputs = { self, nixpkgs, flake-utils, ... }:
     {
       nixosConfigurations = {
-        myserver = nixpkgs.lib.nixosSystem {
+        server = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
 
           modules = [

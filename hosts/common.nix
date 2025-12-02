@@ -18,3 +18,10 @@
     passwordAuthentication = false;
   };
 }
+
+# Setup Bootloader for BIOS
+boot.loader.grub = {
+  enable = true;
+  version = 2;
+  device = "/dev/sda";
+};
