@@ -12,19 +12,33 @@ jobs:
   nix-validation:
     name: Validate NixOS configuration
     runs-on: ubuntu-latest
-    container:
-      image: nixos/nix:latest
-    env:
-      NIX_CONFIG: "experimental-features = nix-command flakes"
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
 
       - name: Show Nix version
-        run: nix --version
+        run: |
+          docker run --rm \
+            -e "NIX_CONFIG=experimental-features = nix-command flakes" \
+            -v "${{ github.workspace }}:/workspace" \
+            -w /workspace \
+            nixos/nix:latest \
+            nix --version
 
       - name: Run flake checks
-        run: nix flake check --show-trace
+        run: |
+          docker run --rm \
+            -e "NIX_CONFIG=experimental-features = nix-command flakes" \
+            -v "${{ github.workspace }}:/workspace" \
+            -w /workspace \
+            nixos/nix:latest \
+            nix flake check --show-trace
 
       - name: Build polaris system
-        run: nix build .#nixosConfigurations.myserver.config.system.build.toplevel --show-trace
+        run: |
+          docker run --rm \
+            -e "NIX_CONFIG=experimental-features = nix-command flakes" \
+            -v "${{ github.workspace }}:/workspace" \
+            -w /workspace \
+            nixos/nix:latest \
+            nix build .#nixosConfigurations.myserver.config.system.build.toplevel --show-trace
