@@ -18,7 +18,7 @@ jobs:
       NIX_CONFIG: "experimental-features = nix-command flakes"
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Show Nix version
         run: nix --version
