@@ -1,5 +1,5 @@
 {
-  description = "NixDockyard - Setup for a Docker homelab-server";
+  description = "NixDockyard - Flake for a Docker homelab-server";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
@@ -9,7 +9,7 @@
   outputs = { self, nixpkgs, flake-utils, ... }:
     {
       nixosConfigurations = {
-        server = nixpkgs.lib.nixosSystem {
+        polaris = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
 
           modules = [

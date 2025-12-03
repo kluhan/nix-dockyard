@@ -14,6 +14,12 @@
     jq
   ];
 
+  # Setup Bootloader for BIOS
+  boot.loader.grub = {
+    enable = true;
+    device = "/dev/sda";
+  };
+
   # Automatic updates
   system.autoUpgrade = {
     enable = true;
