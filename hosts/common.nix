@@ -5,7 +5,7 @@
   users.users.kluhan = {
     isNormalUser = true;
     description = "kluhan user";
-    initialPassword "admin"
+    initialPassword = "admin";
     extraGroups = [ "wheel" "networkmanager" "docker" ];
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAA....DEIN_KEY"

@@ -12,9 +12,9 @@
   # Hardened SSH defaults for all hosts
   services.openssh = {
     enable = true;
-    ciphers = [ "chacha20-poly1305@openssh.com" ];
 
     settings = {
+      ciphers = [ "chacha20-poly1305@openssh.com" ];
       KexAlgorithms = [ "curve25519-sha256" ];
       PermitRootLogin = "no";
       PasswordAuthentication = false;
