@@ -9,9 +9,14 @@
 
   services.fail2ban.enable = true;
 
-  # SSH Hardening
+
+  # Hardened SSH defaults for all hosts
   services.openssh = {
-    kexAlgorithms = [ "curve25519-sha256" ];
+    enable = true;
+    KexAlgorithms = [ "curve25519-sha256" ];
     ciphers = [ "chacha20-poly1305@openssh.com" ];
+    settings = {
+      PermitRootLogin = "no";
+      PasswordAuthentication = false;
   };
 }

@@ -11,17 +11,9 @@
     ];
   };
 
-  # Hardened SSH defaults for all hosts
-  services.openssh = {
-    enable = true;
-    permitRootLogin = "no";
-    passwordAuthentication = false;
-  };
-
   # Setup Bootloader for BIOS
   boot.loader.grub = {
     enable = true;
-    version = 2;
     device = "/dev/sda";
   };
 }
