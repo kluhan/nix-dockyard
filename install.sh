@@ -1,1 +1,1 @@
-sudo nixos-install -flake .#server
+sudo nixos-install --flake .#server

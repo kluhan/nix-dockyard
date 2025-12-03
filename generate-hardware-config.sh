@@ -19,3 +19,6 @@ fi
 # Ensure correct permissions
 chown nixos hardware-configuration.nix
 chgrp users hardware-configuration.nix
+
+# Add hardware generationt to git so the flake can see it
+git add hardware-configuration.nix
