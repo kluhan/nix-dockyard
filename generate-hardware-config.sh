@@ -15,3 +15,7 @@ else
     echo "Error: hardware-configuration.nix not found!"
     exit 1
 fi
+
+# Ensure correct permissions
+chown nixos hardware-configuration.nix
+chgrp users hardware-configuration.nix
