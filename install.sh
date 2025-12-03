@@ -1,1 +1,1 @@
-sudo nixos-install --flake .#polaris
+nixos-install --flake .#polaris
