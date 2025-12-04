@@ -5,7 +5,7 @@ GREEN="\033[1;32m"
 RESET="\033[0m"
 
 stage() {
-    echo -e "${GREEN}<<<< STAGE - $1 >>>>${RESET}"
+    echo -e "${GREEN}<<< STAGE - $1 >>>${RESET}"
 }
 
 DISK="/dev/sda"   # Change if needed
@@ -50,6 +50,4 @@ stage "MOUNT PARTITIONS"
 mount "${DISK}4" /mnt
 mkdir -p /mnt/boot
 mount -o umask=077 "${DISK}1" /mnt/boot
-
-stage "DONE"
 echo "✅ Partitions created, formatted, and mounted successfully."
