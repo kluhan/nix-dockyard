@@ -5,15 +5,14 @@ GREEN="\033[1;32m"
 RESET="\033[0m"
 
 stage() {
-    echo -e "${GREEN}>>>> STAGE: $1 <<<<${RESET}"
+    echo -e "${GREEN}<<<< STAGE - $1 >>>>${RESET}"
 }
 
-# ⚠ WARNING: THIS WILL ERASE ALL DATA ON THE DISK!
 DISK="/dev/sda"   # Change if needed
 SWAP_FACTOR=1     # swap = RAM * SWAP_FACTOR
 
 stage "WARNING"
-echo "⚠ WARNING: All data on $DISK will be destroyed!"
+echo "WARNING: All data on $DISK will be destroyed!"
 read -p "Type YES to continue: " CONFIRM
 if [ "$CONFIRM" != "YES" ]; then
     echo "Aborted."
