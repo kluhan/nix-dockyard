@@ -10,7 +10,8 @@ if [[ $# -lt 1 ]]; then
 fi
 
 HOSTNAME="$1"
+GREEN="\033[1;32m"
+RESET="\033[0m"
 
-echo ">>> Installing NixOS for host: $HOSTNAME"
-
+echo -e "${GREEN}<<< Installing NixOS for host: $HOSTNAME >>>${RESET}"
 nixos-install --flake ".#$HOSTNAME"
