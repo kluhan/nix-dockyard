@@ -12,12 +12,13 @@
   # Hardened SSH defaults for all hosts
   services.openssh = {
     enable = true;
+    ports = [ 22 ];
 
     settings = {
-      ciphers = [ "chacha20-poly1305@openssh.com" ];
-      KexAlgorithms = [ "curve25519-sha256" ];
-      PermitRootLogin = "no";
       PasswordAuthentication = false;
+      KbdInteractiveAuthentication = false;
+      PermitRootLogin = "no";
+      AllowUsers = [ "kluhan" ];
     };
   };
 }
