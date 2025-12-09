@@ -22,32 +22,40 @@ fi
 stage "DETECT RAM"
 RAM_MB=$(free -m | awk '/Mem:/ {print $2}')
 SWAP_MB=$((RAM_MB * SWAP_FACTOR))
-echo "Detected RAM: ${RAM_MB}MiB → swap will be ${SWAP_MB}MiB"
+SWAP_GB=$(( (SWAP_MB + 1023) / 1024 ))   # Convert to GiB (rounded up)
+
+echo "Detected RAM: ${RAM_MB}MiB → swap will be ${SWAP_GB}GiB"
 
 stage "WIPE DISK"
-sgdisk -Z "$DISK"
+# Create GPT
+parted -s "$DISK" mklabel gpt
 
-stage "CREATE PARTITIONS"
-# Partition 1: EFI Boot (512MiB)
-sgdisk -n1:0:+512M -t1:EF00 -c1:"EFI Boot" "$DISK"
+stage "CREATE PARTITIONS (UEFI according to NixOS manual)"
 
-# Partition 2: BIOS GRUB (32MiB)
-sgdisk -n2:0:+32M -t2:EF02 -c2:"BIOS GRUB" "$DISK"
+# 1) EFI System Partition: 1MiB → 512MiB
+parted -s "$DISK" mkpart ESP fat32 1MiB 512MiB
 
-# Partition 3: Swap (dynamic size)
-sgdisk -n3:0:+${SWAP_MB}M -t3:8200 -c3:"Swap" "$DISK"
+# 2) Root Partition: 512MiB → (end - swap)
+parted -s "$DISK" mkpart root ext4 512MiB "-${SWAP_GB}GiB"
 
-# Partition 4: Root (rest of disk)
-sgdisk -n4:0:0 -t4:8300 -c4:"NixOS Root" "$DISK"
+# 3) Swap Partition: final part of the disk
+parted -s "$DISK" mkpart swap linux-swap "-${SWAP_GB}GiB" 100%
+
+# Mark ESP
+parted -s "$DISK" set 1 esp on
+
+stage "SHOW PARTITION TABLE"
+parted "$DISK" -- print
 
 stage "FORMAT PARTITIONS"
 mkfs.fat -F32 "${DISK}1"             # EFI
-mkswap "${DISK}3"                   # Swap
+mkfs.ext4 "${DISK}2"                 # Root
+mkswap "${DISK}3"                    # Swap
 swapon "${DISK}3"
-mkfs.ext4 "${DISK}4"                # Root
 
 stage "MOUNT PARTITIONS"
-mount "${DISK}4" /mnt
+mount "${DISK}2" /mnt
 mkdir -p /mnt/boot
-mount -o umask=077 "${DISK}1" /mnt/boot
+mount "${DISK}1" /mnt/boot
+
 echo "✅ Partitions created, formatted, and mounted successfully."
