@@ -20,17 +20,24 @@ if [ "$CONFIRM" != "YES" ]; then
 fi
 
 stage "DETECT RAM"
-RAM_MB=$(free -m | awk '/Mem:/ {print $2}')
+# RAM in MiB (guaranteed integer)
+RAM_MB=$(free -m | awk '/Mem:/ {print $2 + 0}')
 SWAP_MB=$((RAM_MB * SWAP_FACTOR))
 echo "Detected RAM: ${RAM_MB}MiB → swap will be ${SWAP_MB}MiB"
 
 stage "DETECT DISK SIZE"
-DISK_MB=$(lsblk -bno SIZE "$DISK")
-DISK_MB=$((DISK_MB / 1024 / 1024))   # convert bytes → MiB
+# Read disk size in MiB reliably
+DISK_BYTES=$(lsblk -bno SIZE "$DISK")
+DISK_MB=$((DISK_BYTES / 1024 / 1024))
 echo "Disk size: ${DISK_MB}MiB"
 
-# Root ends where swap begins
+# Safety check: ensure variables are numeric
+[[ "$DISK_MB" =~ ^[0-9]+$ ]] || { echo "ERROR: DISK_MB invalid"; exit 1; }
+[[ "$SWAP_MB" =~ ^[0-9]+$ ]] || { echo "ERROR: SWAP_MB invalid"; exit 1; }
+
+# Compute root end
 ROOT_END_MB=$((DISK_MB - SWAP_MB))
+ROOT_END_MB=$((ROOT_END_MB > 0 ? ROOT_END_MB : 1))  # never negative or zero
 
 echo "Root partition will end at ${ROOT_END_MB}MiB"
 
@@ -39,25 +46,25 @@ parted -s "$DISK" mklabel gpt
 
 stage "CREATE PARTITIONS"
 
-# EFI partition: 1MiB → 512MiB
+# EFI: 1MiB → 512MiB
 parted -s "$DISK" mkpart ESP fat32 1MiB 512MiB
 
-# Root: 512MiB → ROOT_END_MB
+# Root: 512MiB → ROOT_END_MB MiB
 parted -s "$DISK" mkpart root ext4 512MiB "${ROOT_END_MB}MiB"
 
-# Swap: ROOT_END_MB → end
+# Swap: end of root → full disk
 parted -s "$DISK" mkpart swap linux-swap "${ROOT_END_MB}MiB" 100%
 
-# Set ESP flag
+# Mark ESP flag
 parted -s "$DISK" set 1 esp on
 
 stage "SHOW PARTITION TABLE"
 parted "$DISK" print
 
 stage "FORMAT PARTITIONS"
-mkfs.fat -F32 "${DISK}1"           # ESP
-mkfs.ext4 "${DISK}2"               # Root
-mkswap "${DISK}3"                  # Swap
+mkfs.fat -F32 "${DISK}1"
+mkfs.ext4 "${DISK}2"
+mkswap "${DISK}3"
 swapon "${DISK}3"
 
 stage "MOUNT PARTITIONS"
