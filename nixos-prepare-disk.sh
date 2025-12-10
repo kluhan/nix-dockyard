@@ -1,3 +1,22 @@
+#!/bin/bash
+set -euo pipefail
+
+GREEN="\033[1;32m"
+RESET="\033[0m"
+
+stage() {
+    echo -e "${GREEN}<<< STAGE - $1 >>>${RESET}"
+}
+
+# -------------------------
+# CONFIGURATION
+# -------------------------
+DISK="/dev/sda"        # CHANGE if /dev/nvme0n1 etc.
+SWAP_FACTOR=1          # swap = RAM * factor
+EFI_START="1MiB"
+EFI_END="512MiB"
+ROOT_START="$EFI_END"
+# -------------------------
 stage "DETECT RAM"
 RAM_MB=$(free -m | awk '/Mem:/ {print $2 + 0}')
 SWAP_MB=$((RAM_MB * SWAP_FACTOR))
