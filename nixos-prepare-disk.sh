@@ -29,14 +29,13 @@ sgdisk -Z "$DISK"
 
 stage "CREATE PARTITIONS (BIOS ONLY)"
 
-# 1. BIOS GRUB partition (required for GPT + BIOS)
 sgdisk -n1:0:+32M -t1:EF02 -c1:"BIOS GRUB" "$DISK"
-
-# 2. Swap
 sgdisk -n2:0:+${SWAP_MB}M -t2:8200 -c2:"Swap" "$DISK"
-
-# 3. Root (rest of disk)
 sgdisk -n3:0:0 -t3:8300 -c3:"NixOS Root" "$DISK"
+
+stage "RELOAD PARTITION TABLE"
+partprobe "$DISK"
+udevadm settle
 
 stage "FORMAT PARTITIONS"
 mkswap "${DISK}2"
