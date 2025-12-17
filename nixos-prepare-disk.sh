@@ -1,48 +1,61 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -euo pipefail
+
+# =========================
+# Configuration
+# =========================
+DISK="/dev/sda"
+SWAP_SIZE_GB=8
 
 GREEN="\033[1;32m"
 RESET="\033[0m"
 
 stage() {
-    echo -e "${GREEN}<<< STAGE - $1 >>>${RESET}"
+  echo -e "${GREEN}>>> STAGE: $1 <<<${RESET}"
 }
 
-DISK="/dev/sda"
-SWAP_FACTOR=1
-
+# =========================
+# Safety Check
+# =========================
 stage "WARNING"
-echo "WARNING: All data on $DISK will be destroyed!"
-read -p "Type YES to continue: " CONFIRM
-if [ "$CONFIRM" != "YES" ]; then
-    echo "Aborted."
-    exit 1
+echo "WARNING: This will DESTROY ALL DATA on ${DISK}"
+read -rp "Type YES to continue: " CONFIRM
+if [[ "${CONFIRM}" != "YES" ]]; then
+  echo "Aborted."
+  exit 1
 fi
 
-stage "DETECT RAM"
-RAM_MB=$(free -m | awk '/Mem:/ {print $2}')
-SWAP_MB=$((RAM_MB * SWAP_FACTOR))
-echo "Detected RAM: ${RAM_MB}MiB → swap will be ${SWAP_MB}MiB"
+# =========================
+# Create MBR Partition Table
+# =========================
+stage "CREATE MBR PARTITION TABLE"
+parted -s "${DISK}" mklabel msdos
 
-stage "WIPE DISK & CREATE GPT"
-sgdisk -Z "$DISK"
+# =========================
+# Create Root Partition
+# =========================
+stage "CREATE ROOT PARTITION"
+# Root: from 1MiB to disk minus swap
+parted -s "${DISK}" mkpart primary ext4 1MiB "-${SWAP_SIZE_GB}GiB"
 
-stage "CREATE PARTITIONS (BIOS ONLY)"
+# =========================
+# Set Boot Flag
+# =========================
+stage "SET BOOT FLAG"
+parted -s "${DISK}" set 1 boot on
 
-sgdisk -n1:0:+32M -t1:EF02 -c1:"BIOS GRUB" "$DISK"
-sgdisk -n2:0:+${SWAP_MB}M -t2:8200 -c2:"Swap" "$DISK"
-sgdisk -n3:0:0 -t3:8300 -c3:"NixOS Root" "$DISK"
+# =========================
+# Create Swap Partition
+# =========================
+stage "CREATE SWAP PARTITION"
+parted -s "${DISK}" mkpart primary linux-swap "-${SWAP_SIZE_GB}GiB" 100%
 
-stage "RELOAD PARTITION TABLE"
-partprobe "$DISK"
-udevadm settle
+# =========================
+# Summary
+# =========================
+stage "PARTITION TABLE RESULT"
+parted "${DISK}" print
 
-stage "FORMAT PARTITIONS"
-mkswap "${DISK}2"
-swapon "${DISK}2"
-mkfs.ext4 "${DISK}3"
-
-stage "MOUNT ROOT"
-mount "${DISK}3" /mnt
-
-echo "✔ BIOS-only GPT layout ready for NixOS installation."
+echo
+echo "Partitioning complete."
+echo "You can now proceed with formatting (mkfs.ext4, mkswap, etc.)."
