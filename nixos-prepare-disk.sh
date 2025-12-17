@@ -8,63 +8,42 @@ stage() {
     echo -e "${GREEN}<<< STAGE - $1 >>>${RESET}"
 }
 
-# -------------------------
-# CONFIGURATION
-# -------------------------
-DISK="/dev/sda"        # CHANGE if /dev/nvme0n1 etc.
-SWAP_FACTOR=1          # swap = RAM * factor
-EFI_START="1MiB"
-EFI_END="512MiB"
-SWAP_START="$EFI_END"
-# -------------------------
+DISK="/dev/sda"
+SWAP_FACTOR=1
 
 stage "WARNING"
 echo "WARNING: All data on $DISK will be destroyed!"
 read -p "Type YES to continue: " CONFIRM
-[[ "$CONFIRM" == "YES" ]] || exit 1
+if [ "$CONFIRM" != "YES" ]; then
+    echo "Aborted."
+    exit 1
+fi
 
 stage "DETECT RAM"
-# RAM in MiB (numeric only)
-RAM_MB=$(free -m | awk '/Mem:/ {print $2 + 0}')
-SWAP_MB=$(( RAM_MB * SWAP_FACTOR ))
+RAM_MB=$(free -m | awk '/Mem:/ {print $2}')
+SWAP_MB=$((RAM_MB * SWAP_FACTOR))
+echo "Detected RAM: ${RAM_MB}MiB → swap will be ${SWAP_MB}MiB"
 
-echo "Detected RAM: ${RAM_MB} MiB"
-echo "Swap size:    ${SWAP_MB} MiB"
+stage "WIPE DISK & CREATE GPT"
+sgdisk -Z "$DISK"
 
-# final suffix for parted
-SWAP_END=$((EFI_END + SWAP_MB) )
-SWAP_END="${SWAP_MB}MiB"
+stage "CREATE PARTITIONS (BIOS ONLY)"
 
-stage "WIPE DISK"
-parted -s "$DISK" mklabel gpt
+# 1. BIOS GRUB partition (required for GPT + BIOS)
+sgdisk -n1:0:+32M -t1:EF02 -c1:"BIOS GRUB" "$DISK"
 
-stage "CREATE PARTITIONS (UEFI)"
+# 2. Swap
+sgdisk -n2:0:+${SWAP_MB}M -t2:8200 -c2:"Swap" "$DISK"
 
-# 1) EFI partition (1 → 512 MiB)
-parted -s "$DISK" mkpart ESP fat32 $EFI_START $EFI_END
-parted -s "$DISK" set 1 esp on
-
-# 2) Swap partition at SWAP_START → SWAP_END
-parted -s "$DISK" mkpart swap linux-swap "$SWAP_START" "$SWAP_END"
-
-# 3) Root partiton
-parted -s "$DISK" mkpart root ext4 "-$SWAP_END" 100%
-
-stage "SHOW PARTITIONS"
-parted "$DISK" print
+# 3. Root (rest of disk)
+sgdisk -n3:0:0 -t3:8300 -c3:"NixOS Root" "$DISK"
 
 stage "FORMAT PARTITIONS"
-mkfs.fat -F32 "${DISK}1"
-mkfs.ext4 "${DISK}3"
 mkswap "${DISK}2"
 swapon "${DISK}2"
+mkfs.ext4 "${DISK}3"
 
-stage "MOUNT"
+stage "MOUNT ROOT"
 mount "${DISK}3" /mnt
-mkdir -p /mnt/boot
-mount "${DISK}1" /mnt/boot
 
-echo "✅ Done — partitions created, formatted, and mounted."
-echo "   Disk: $DISK"
-echo "   Swap: $SWAP_MB MiB"
-
+echo "✔ BIOS-only GPT layout ready for NixOS installation."
