@@ -5,6 +5,7 @@ DISK="/dev/sda"
 ROOT_LABEL="nixos"
 SWAP_LABEL="swap"
 SWAP_SIZE_GB=8
+MOUNT_POINT="/mnt"
 
 GREEN="\033[1;32m"
 RESET="\033[0m"
@@ -53,13 +54,20 @@ stage "FORMAT SWAP PARTITION"
 mkswap -L "$SWAP_LABEL" "${DISK}2"
 
 # -------------------------
+# Mounting
+# -------------------------
+stage "MOUNT ROOT FILESYSTEM"
+mkdir -p "$MOUNT_POINT"
+mount "/dev/disk/by-label/${ROOT_LABEL}" "$MOUNT_POINT"
+
+# -------------------------
 # Summary
 # -------------------------
-stage "FINAL RESULT"
+stage "FINAL STATE"
 lsblk -f "$DISK"
+df -h "$MOUNT_POINT"
+swapon --show
 
 echo
-echo "Partitioning and formatting complete."
-echo "Root label : ${ROOT_LABEL}"
-echo "Swap label : ${SWAP_LABEL}"
-echo "You can now mount /dev/disk/by-label/${ROOT_LABEL} and continue installation."
+echo "System prepared and mounted at ${MOUNT_POINT}."
+echo "You can now continue with nixos-generate-config or nixos-install."
