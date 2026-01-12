@@ -15,8 +15,6 @@
           modules = [
             ./hardware-configuration.nix
             ./hosts/polaris/configuration.nix
-            ./modules/base.nix
-            ./modules/security.nix
             ./modules/docker.nix
           ];
         };
