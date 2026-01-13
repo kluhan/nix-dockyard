@@ -34,6 +34,22 @@
             }
           ];
         };
+        vega = nixpkgs.lib.nixosSystem {
+          system = "x86_64-linux";
+          modules = [
+            ./hardware-configurations/vega.nix
+            ./hosts/vega/configuration.nix
+            ./modules/docker.nix
+            # make home-manager as a module of nixos
+            # so that home-manager configuration will be deployed automatically when executing `nixos-rebuild switch`
+            home-manager.nixosModules.home-manager
+            {
+              home-manager.useGlobalPkgs = true;
+              home-manager.useUserPackages = true;
+              home-manager.users.kluhan = import ./home.nix;
+            }
+          ];
+        };
       };
     };
 }
