@@ -21,7 +21,7 @@
           system = "x86_64-linux";
 
           modules = [
-            ./hardware-configuration.nix
+            ./hardware-configurations/polaris.nix
             ./hosts/polaris/configuration.nix
             ./modules/docker.nix
             # make home-manager as a module of nixos
