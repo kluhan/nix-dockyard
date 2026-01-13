@@ -26,6 +26,7 @@
     curl
     wget
     jq
+    gnumake
   ];
 
   # Firewall & SSH
