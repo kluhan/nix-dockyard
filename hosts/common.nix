@@ -1,12 +1,19 @@
 { config, pkgs, ... }:
 
 {
+  # Setup auxiliary group 'stackops' for giving users access to /opt/stacks/ 
+  users.groups.stackops = {};
+  # Create /opt/stacks/ with group 'stackops' and ensure proper permissions
+  systemd.tmpfiles.rules = [
+    "d /opt/stacks 2774 root stackops -"
+  ];
+
   # Shared user configuration
   users.users.kluhan = {
     isNormalUser = true;
     description = "Klaus Luhan";
     initialPassword = "admin";
-    extraGroups = [ "wheel" "networkmanager" "docker" ];
+    extraGroups = [ "wheel" "networkmanager" "docker" "stackops"];
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICd7YIOX1aQ0GJj9FPxJt0m73dmYKZYoNo5Y5kggSm3Q"
     ];
