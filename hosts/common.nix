@@ -32,7 +32,17 @@
   # Firewall & SSH
   networking.firewall = {
     enable = true;
-    allowedTCPPorts = [ 22 80 443 ];
+    allowedTCPPorts = [ 
+        22
+        80
+        443
+        2377 # Swarm: communication with and between manager nodes
+        7946 # Swarm: TCP/UDP for overlay network node discovery
+      ];
+    allowedUDPPorts = [
+        4789 # Swarm: UDP (configurable) for overlay network traffic
+        7946 # Swarm: TCP/UDP for overlay network node discovery
+      ];
   };
 
   services.fail2ban.enable = true;
