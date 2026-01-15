@@ -6,6 +6,7 @@
   # Create /opt/stacks/ with group 'stackops' and ensure proper permissions
   systemd.tmpfiles.rules = [
     "d /opt/stacks 2774 root stackops -"
+    "d /etc/komodo 2774 root docker -"
   ];
 
   # Shared user configuration
