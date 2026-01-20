@@ -16,7 +16,8 @@
     initialPassword = "admin";
     extraGroups = [ "wheel" "networkmanager" "docker" "stackops"];
     openssh.authorizedKeys.keys = [
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICd7YIOX1aQ0GJj9FPxJt0m73dmYKZYoNo5Y5kggSm3Q"
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICd7YIOX1aQ0GJj9FPxJt0m73dmYKZYoNo5Y5kggSm3Q" # MacBook
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMQXX8EtXBevKlnD/G7KtmFHmn+28fQW5rBBje+3SxIJ" # Termix
     ];
   };
 
