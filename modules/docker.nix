@@ -17,18 +17,4 @@
   environment.systemPackages = with pkgs; [
     docker-compose
   ];
-
-  # Add docker user for nfs shares
-  users.groups.docker = {
-    gid = 999;
-  };
-
-  users.users.docker = {
-    uid = 1000;
-    isSystemUser = true;
-    group = "docker";
-    createHome = false;
-    home = "/var/empty";
-    shell = pkgs.shadow.bin.nologin;
-  };
 }
