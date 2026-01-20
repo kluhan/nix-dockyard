@@ -35,6 +35,7 @@
     wget
     jq
     gnumake
+    nfs-utils
   ];
 
   # Firewall & SSH
